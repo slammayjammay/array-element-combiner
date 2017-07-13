@@ -7,6 +7,15 @@ if (DEBUG) {
 	chalk = require('chalk');
 }
 
+const DEFAULTS = {
+	cancel() {
+		return false;
+	},
+	ignore() {
+		return false;
+	}
+};
+
 /**
  * Given an array, combines adjacent elements. Callbacks that indicate if two
  * elements can be combined and what the combined value is must be given. When
@@ -21,9 +30,12 @@ if (DEBUG) {
  * @param {function} [options.cancel] - Returns a boolean indicating whether two elements should be cancelled (and no value is inserted).
  * @param {function} options.combine - Returns the combined value of two elements.
  * @param {function} options.compare - Returns a boolean indicating whether two elements can be combined.
+ * @param {function} [options.ignore] - Returns a boolean indicating whether to ignore an element and continue with the next.
  */
 module.exports = (input, options = {}) => {
 	validateInput(input, options);
+
+	options = Object.assign({}, DEFAULTS, options);
 
 	if (input.length <= 1) {
 		return input;
@@ -45,6 +57,7 @@ module.exports = (input, options = {}) => {
 			console.log();
 		});
 
+		// break early
 		if (temp.length === 0) {
 			debug(() => {
 				console.log(chalk.green('breaking'));
@@ -54,6 +67,7 @@ module.exports = (input, options = {}) => {
 			break;
 		}
 
+		// break early
 		if (temp.length === 1) {
 			output.push(temp.pop());
 			debug(() => {
@@ -72,7 +86,7 @@ module.exports = (input, options = {}) => {
 				actionValue = value;
 			});
 
-			if (!options.cancel || !options.cancel(value)) {
+			if (!options.cancel(value)) {
 				output.push(value);
 			}
 

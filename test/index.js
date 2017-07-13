@@ -36,6 +36,9 @@ describe('array-element-combiner', () => {
 			},
 			cancel(value) {
 				return value.value === 0;
+			},
+			ignore(a, b) {
+				return a.ignore || b.ignore;
 			}
 		};
 
@@ -102,6 +105,20 @@ describe('array-element-combiner', () => {
 			];
 			const expected = [
 				{ type: '*', value: 256 }
+			];
+
+			expect(combiner(input, options)).to.eql(expected);
+		});
+
+		it('ignores elements', () => {
+			const input = [
+				{ type: '+', value: 1 },
+				{ type: '+', value: 1, ignore: true },
+				{ type: '+', value: 1 }
+			];
+			const expected = [
+				{ type: '+', value: 1, ignore: true },
+				{ type: '+', value: 2 }
 			];
 
 			expect(combiner(input, options)).to.eql(expected);
