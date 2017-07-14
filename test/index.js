@@ -44,14 +44,14 @@ describe('array-element-combiner', () => {
 
 		it('does not modify inputs', () => {
 			const input = [{ key: 'value' }];
-			assert(combiner(input, options) === input);
+			expect(combiner(input, options)).to.eql(input);
 		});
 
 		it('returns the input if length is 0 or 1', () => {
 			let input = [];
-			assert(combiner(input, options) === input);
+			expect(combiner(input, options)).to.eql(input);
 			input = ['val1'];
-			assert(combiner(input, options) === input);
+			expect(combiner(input, options)).to.eql(input);
 		});
 
 		it('combines array of two elements', () => {

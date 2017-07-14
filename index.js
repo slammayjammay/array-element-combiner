@@ -1,11 +1,7 @@
 const args = process.argv.slice(2);
 const DEBUG = args.includes('-d') || args.includes('--debug');
 
-let chalk;
-
-if (DEBUG) {
-	chalk = require('chalk');
-}
+const Combiner = require('./Combiner');
 
 const DEFAULTS = {
 	cancel() {
@@ -34,136 +30,12 @@ const DEFAULTS = {
  */
 module.exports = (input, options = {}) => {
 	validateInput(input, options);
+	options.DEBUG = DEBUG;
 
-	options = Object.assign({}, DEFAULTS, options);
-
-	if (input.length <= 1) {
-		return input;
-	}
-
-	input = input.slice();
-	const output = [];
-	let temp = [input.shift(), input.shift()];
-
-	let action, actionValue, tempSnapshot; // for debugging
-
-	// temp should always hold the correct comparable elements at the start of this loop
-	while (temp.length > 0) {
-		debug(() => {
-			tempSnapshot = temp.slice();
-
-			console.log(chalk.bold('========= START ========='));
-			_logInfo(temp, input, output);
-			console.log();
-		});
-
-		// break early
-		if (temp.length === 0) {
-			debug(() => {
-				console.log(chalk.green('breaking'));
-				console.log(chalk.bold('========= END ========='));
-				console.log();
-			});
-			break;
-		}
-
-		// break early
-		if (temp.length === 1) {
-			output.push(temp.pop());
-			debug(() => {
-				console.log(chalk.green('breaking'));
-				console.log(chalk.bold('========= END ========='));
-				console.log();
-			});
-			break;
-		}
-
-		if (options.compare(temp[0], temp[1])) {
-			const value = options.combine(temp[0], temp[1]);
-
-			debug(() => {
-				action = 'Combining:';
-				actionValue = value;
-			});
-
-			if (!options.cancel(value)) {
-				output.push(value);
-			}
-
-			temp = [];
-			populateTempBackward(temp, input, output);
-		} else {
-			debug(() => {
-				action = 'Skipping:';
-			});
-
-			output.push(temp.shift());
-			populateTempForward(temp, input, output);
-		}
-
-		debug(() => {
-			// log the action taken
-			console.log(chalk.green(action), tempSnapshot);
-			console.log(chalk.green('value:'), actionValue);
-			console.log();
-
-			// log the status
-			_logInfo(temp, input, output);
-			console.log(chalk.bold('========= END ========='));
-			console.log();
-
-			action = null;
-			actionValue = null;
-			tempSnapshot = null;
-		});
-	}
-
-	debug(() => {
-		console.log(chalk.bold.green('========= FINAL ========='));
-		_logInfo(temp, input, output);
-		console.log(chalk.bold.green('========= FINAL ========='));
-		console.log();
-	});
-
-	return output;
+	const combiner = new Combiner(input, options);
+	return combiner.run();
 };
 
-// grabs elements from the "processed" array. If none is found, grab from the
-// "unprocessed" array.
-function populateTempBackward(temp, input, output) {
-	while (temp.length < 2) {
-		let element = output.pop();
-
-		// if we grab from output then unshift it into temp
-		let fn = 'unshift';
-
-		// if element is undefined, grab from output instead...
-		element = element !== undefined ? element : input.shift();
-
-		// ...and then push it into temp
-		fn = typeof element !== undefined ? fn : 'push';
-
-		// if still no element then just return?
-		if (element === undefined) {
-			return;
-		}
-
-		temp[fn](element);
-	}
-}
-
-// grabs elements from the "unprocessed" array. If none is found, return.
-function populateTempForward(temp, input, output) {
-	while (temp.length < 2) {
-		let element = input.shift();
-
-		if (element === undefined) {
-			return;
-		}
-
-		temp.push(element);
-	}
-}
 
 //=======================================================
 // Helper functions
@@ -180,22 +52,4 @@ function validateInput(input, options) {
 	if (!options.combine) {
 		throw new Error(`options.combine callback must be present`);
 	}
-}
-
-
-//=======================================================
-// Debugging functions
-//=======================================================
-function debug(callback) {
-	if (!DEBUG) {
-		return;
-	}
-
-	callback && callback();
-}
-
-function _logInfo(temp, input, output) {
-	console.log(chalk.bold('output'), output);
-	console.log(chalk.bold('temp'), temp);
-	console.log(chalk.bold('input'), input);
 }
