@@ -14,7 +14,7 @@ class Combiner {
 		this.output = [];
 	}
 
-	go() {
+	run() {
 		if (this.input.length <= 1) {
 			return this.input;
 		}

@@ -23,7 +23,7 @@ module.exports = (input, options = {}) => {
 	options.DEBUG = DEBUG;
 
 	const combiner = new Combiner(input, options);
-	return combiner.go();
+	return combiner.run();
 };
 
 
