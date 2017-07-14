@@ -1,6 +1,3 @@
-const args = process.argv.slice(2);
-const DEBUG = args.includes('-d') || args.includes('--debug');
-
 const Combiner = require('./Combiner');
 
 const DEFAULTS = {
@@ -30,7 +27,6 @@ const DEFAULTS = {
  */
 module.exports = (input, options = {}) => {
 	validateInput(input, options);
-	options.DEBUG = DEBUG;
 
 	const combiner = new Combiner(input, options);
 	return combiner.run();

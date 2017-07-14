@@ -19,19 +19,30 @@ class Combiner {
 			return this.input;
 		}
 
-		this.temp = [this.input.shift(), this.input.shift()];
+		this.temp = [this.input.shift()];
 
 		let action, actionValue, tempSnapshot; // for debugging
 
-		// temp should always hold the correct comparable elements at the start of this loop
 		while (this.temp.length > 0) {
 			debug(() => {
-				tempSnapshot = this.temp.slice();
-
 				console.log(chalk.bold('========= START ========='));
 				this._logInfo();
 				console.log();
 			});
+
+			// find the first element that shouldn't be ignored
+			let notIgnoredIdx = 0;
+			let notIgnoredEl = this.input[notIgnoredIdx];
+
+			while (notIgnoredIdx < this.input.length && this.options.ignore(this.temp[0], notIgnoredEl)) {
+				notIgnoredEl = this.input[++notIgnoredIdx];
+			}
+
+			if (notIgnoredIdx < this.input.length) {
+				this.temp.push(notIgnoredEl);
+			}
+
+			debug(() => tempSnapshot = this.temp.slice());
 
 			if (this.temp.length === 0) {
 				debug(() => {
@@ -49,8 +60,11 @@ class Combiner {
 					console.log(chalk.bold('========= END ========='));
 					console.log();
 				});
-				break;
+				continue;
 			}
+
+			// remove the combined element from the input array
+			this.input.splice(notIgnoredIdx, 1);
 
 			if (this.options.compare(this.temp[0], this.temp[1])) {
 				const value = this.options.combine(this.temp[0], this.temp[1]);
@@ -60,19 +74,12 @@ class Combiner {
 					actionValue = value;
 				});
 
-				if (!this.options.cancel(value)) {
-					this.output.push(value);
-				}
-
-				this.temp = [];
+				this.temp = this.options.cancel(value) ? [] : [value];
 				this.populateTempBackward();
 			} else {
-				debug(() => {
-					action = 'Skipping:';
-				});
+				debug(() => action = 'Skipping:');
 
 				this.output.push(this.temp.shift());
-				this.populateTempForward();
 			}
 
 			debug(() => {
@@ -107,39 +114,8 @@ class Combiner {
 	 * "unprocessed" array.
 	 */
 	populateTempBackward() {
-		while (this.temp.length < 2) {
-			let element = this.output.pop();
-
-			// if we grab from output then unshift it into temp
-			let fn = 'unshift';
-
-			// if element is undefined, grab from output instead...
-			element = element !== undefined ? element : this.input.shift();
-
-			// ...and then push it into temp
-			fn = typeof element !== undefined ? fn : 'push';
-
-			// if still no element then just return?
-			if (element === undefined) {
-				return;
-			}
-
-			this.temp[fn](element);
-		}
-	}
-
-	/**
-	 * grabs elements from the "unprocessed" array. If none is found, return.
-	 */
-	populateTempForward() {
-		while (this.temp.length < 2) {
-			let element = this.input.shift();
-
-			if (element === undefined) {
-				return;
-			}
-
-			this.temp.push(element);
+		if (this.output.length > 0) {
+			this.temp.unshift(this.output.pop());
 		}
 	}
 
