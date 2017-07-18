@@ -59,16 +59,17 @@ class Combiner {
 
 				debug(() => {
 					console.log(chalk.green('continuing'));
+					this._logInfo();
 					console.log(chalk.bold('========= END ========='));
 					console.log();
 				});
 				continue;
 			}
 
-			// remove the combined element from the input array
-			this.input.splice(notIgnoredIdx, 1);
 
 			if (this.options.compare(this.temp[0], this.temp[1])) {
+				// remove the combined element from the input array
+				this.input.splice(notIgnoredIdx, 1);
 				const value = this.options.combine(this.temp[0], this.temp[1]);
 
 				debug(() => {
@@ -79,9 +80,16 @@ class Combiner {
 				this.temp = this.options.cancel(value) ? [] : [value];
 				this.populateTempBackward();
 			} else {
-				debug(() => action = 'Skipping:');
+				this.output.push(this.temp.shift());
 
-				this.moveTempNext();
+				// This keeps elements in order.
+				if (notIgnoredIdx === 0) {
+					this.input.splice(notIgnoredIdx, 1);
+				} else {
+					this.temp = this.input.splice(0, 1);
+				}
+
+				debug(() => action = 'Skipping:');
 			}
 
 			debug(() => {
@@ -109,10 +117,6 @@ class Combiner {
 		});
 
 		return this.output;
-	}
-
-	moveTempNext() {
-		this.output.push(this.temp.shift());
 	}
 
 	populateTempBackward() {
