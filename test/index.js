@@ -204,7 +204,7 @@ describe('array-element-combiner', () => {
 				expect(combiner(input, options)).to.eql(expected);
 			});
 
-			it('cancels b and combines a-- [a, b, i, b, i, i, a]', () => {
+			it('cancels b and combines a -- [a, b, i, b, i, i, a]', () => {
 				const input = [
 					{ compare: 'a', value: 5 },
 					{ compare: 'b', value: -1 },
@@ -216,6 +216,27 @@ describe('array-element-combiner', () => {
 				];
 				const expected = [
 					{ compare: 'a', value: 10 },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } }
+				];
+
+				expect(combiner(input, options)).to.eql(expected);
+			});
+
+			it('some edge case stuff -- [i, i, b, a, i, a, b, i]', () => {
+				const input = [
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'b', value: -1 },
+					{ compare: 'a', value: -5 },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'a', value: 5 },
+					{ compare: 'b', value: 1 },
+					{ compare: 'i', value: null, meta: { ignore: true } }
+				];
+				const expected = [
+					{ compare: 'i', value: null, meta: { ignore: true } },
 					{ compare: 'i', value: null, meta: { ignore: true } },
 					{ compare: 'i', value: null, meta: { ignore: true } },
 					{ compare: 'i', value: null, meta: { ignore: true } }
