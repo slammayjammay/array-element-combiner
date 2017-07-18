@@ -41,7 +41,7 @@ describe('array-element-combiner', () => {
 				return value.value === 0;
 			},
 			ignore(a, b) {
-				return a.ignore || b.ignore;
+				return b.meta && b.meta.ignore;
 			}
 		};
 
@@ -57,7 +57,7 @@ describe('array-element-combiner', () => {
 			expect(combiner(input, options)).to.eql(input);
 		});
 
-		it('combines array of two elements', () => {
+		it('combines two elements', () => {
 			const input = [
 				{ compare: 'yes', value: 1 },
 				{ compare: 'yes', value: 1 }
@@ -114,20 +114,42 @@ describe('array-element-combiner', () => {
 			expect(combiner(input, options)).to.eql(expected);
 		});
 
-		// it('ignores elements', () => {
-		// 	const input = [
-		// 		{ compare: 'one', value: -10 },
-		// 		{ compare: 'two', value: 1 },
-		// 		{ compare: 'two', value: -1 },
-		// 		{ compare: 'one', value: 10 }
-		// 	];
-		// 	const expected = [
-		// 		{ type: '+', value: 1, ignore: true },
-		// 		{ type: '+', value: 2 }
-		// 	];
-		//
-		// 	expect(combiner(input, options)).to.eql(expected);
-		// });
+		describe('ignoring', () => {
+			it('ignores elements', () => {
+				const input = [
+					{ compare: 'yes', value: 1 },
+					{ compare: 'yes', value: -1, meta: { ignore: true } }
+				];
+				const expected = input;
+
+				expect(combiner(input, options)).to.eql(expected);
+			});
+
+			it('keeps the correct order', () => {
+				const input = [
+					{ compare: 'yes', value: 1 },
+					{ compare: 'yes', value: -1, meta: { ignore: true } },
+					{ compare: 'no', value: 10 }
+				];
+				const expected = input;
+
+				expect(combiner(input, options)).to.eql(expected);
+			});
+
+			it('moves combined element values closer to the beginning of the output', () => {
+				const input = [
+					{ compare: 'yes', value: 1 },
+					{ compare: 'yes', value: -1, meta: { ignore: true } },
+					{ compare: 'yes', value: 10 }
+				];
+				const expected = [
+					{ compare: 'yes', value: 11 },
+					{ compare: 'yes', value: -1, meta: { ignore: true } }
+				];
+
+				expect(combiner(input, options)).to.eql(expected);
+			});
+		});
 
 		describe('c-c-c-COMBO!', () => {
 			it('cancels b then cancels a -- [a, b, b, a]', () => {
@@ -177,6 +199,26 @@ describe('array-element-combiner', () => {
 				];
 				const expected = [
 					{ compare: 'two', value: 16 }
+				];
+
+				expect(combiner(input, options)).to.eql(expected);
+			});
+
+			it('cancels b and combines a-- [a, b, i, b, i, i, a]', () => {
+				const input = [
+					{ compare: 'a', value: 5 },
+					{ compare: 'b', value: -1 },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'b', value: 1 },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'a', value: 5 }
+				];
+				const expected = [
+					{ compare: 'a', value: 10 },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } },
+					{ compare: 'i', value: null, meta: { ignore: true } }
 				];
 
 				expect(combiner(input, options)).to.eql(expected);

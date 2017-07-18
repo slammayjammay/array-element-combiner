@@ -55,8 +55,10 @@ class Combiner {
 
 			if (this.temp.length === 1) {
 				this.output.push(this.temp.pop());
+				this.populateTempForward();
+
 				debug(() => {
-					console.log(chalk.green('breaking'));
+					console.log(chalk.green('continuing'));
 					console.log(chalk.bold('========= END ========='));
 					console.log();
 				});
@@ -79,7 +81,7 @@ class Combiner {
 			} else {
 				debug(() => action = 'Skipping:');
 
-				this.output.push(this.temp.shift());
+				this.moveTempNext();
 			}
 
 			debug(() => {
@@ -109,13 +111,19 @@ class Combiner {
 		return this.output;
 	}
 
-	/**
-	 * grabs elements from the "processed" array. If none is found, grab from the
-	 * "unprocessed" array.
-	 */
+	moveTempNext() {
+		this.output.push(this.temp.shift());
+	}
+
 	populateTempBackward() {
 		if (this.output.length > 0) {
 			this.temp.unshift(this.output.pop());
+		}
+	}
+
+	populateTempForward() {
+		if (this.input.length > 0) {
+			this.temp.push(this.input.shift());
 		}
 	}
 

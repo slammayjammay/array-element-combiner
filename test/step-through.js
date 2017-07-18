@@ -1,10 +1,6 @@
 const chalk = require('chalk');
 const combiner = require('../');
 
-const input = [
-	{ compare: 'yes', value: 10 },
-	{ compare: 'yes', value: 1, meta: { newCompare: 'no' } }
-];
 const options = {
 	compare(a, b) {
 		return a.compare === b.compare;
@@ -24,10 +20,16 @@ const options = {
 		return value.value === 0;
 	},
 	ignore(a, b) {
-		return a.ignore || b.ignore;
+		return b.meta && b.meta.ignore;
 	},
 	DEBUG: true
-}
+};
+
+const input = [
+	{ compare: 'yes', value: 1 },
+	{ compare: 'yes', value: -1, meta: { ignore: true } },
+	{ compare: 'no', value: 10 }
+];
 
 const output = combiner(input, options);
 console.log(output);
