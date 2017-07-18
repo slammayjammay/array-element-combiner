@@ -66,7 +66,6 @@ class Combiner {
 				continue;
 			}
 
-
 			if (this.options.compare(this.temp[0], this.temp[1])) {
 				// remove the combined element from the input array
 				this.input.splice(notIgnoredIdx, 1);
@@ -78,7 +77,11 @@ class Combiner {
 				});
 
 				this.temp = this.options.cancel(value) ? [] : [value];
+
 				this.populateTempBackward();
+				if (this.temp.length === 0) {
+					this.populateTempForward();
+				}
 			} else {
 				this.output.push(this.temp.shift());
 
