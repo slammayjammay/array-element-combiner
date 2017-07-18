@@ -13,7 +13,8 @@
     "mocha": "^3.4.2"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test/index.js",
+    "test:step": "node test/step-through.js"
   },
   "keywords": [],
   "author": "",

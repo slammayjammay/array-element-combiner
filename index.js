@@ -1,7 +1,13 @@
-const args = process.argv.slice(2);
-const DEBUG = args.includes('-d') || args.includes('--debug');
-
 const Combiner = require('./Combiner');
+
+const DEFAULTS = {
+	cancel() {
+		return false;
+	},
+	ignore() {
+		return false;
+	}
+};
 
 /**
  * Given an array, combines adjacent elements. Callbacks that indicate if two
@@ -17,10 +23,10 @@ const Combiner = require('./Combiner');
  * @param {function} [options.cancel] - Returns a boolean indicating whether two elements should be cancelled (and no value is inserted).
  * @param {function} options.combine - Returns the combined value of two elements.
  * @param {function} options.compare - Returns a boolean indicating whether two elements can be combined.
+ * @param {function} [options.ignore] - Returns a boolean indicating whether to ignore an element and continue with the next.
  */
 module.exports = (input, options = {}) => {
 	validateInput(input, options);
-	options.DEBUG = DEBUG;
 
 	const combiner = new Combiner(input, options);
 	return combiner.run();
