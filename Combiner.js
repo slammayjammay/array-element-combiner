@@ -1,9 +1,18 @@
 let chalk;
 let DEBUG;
 
+const DEFAULTS = {
+	cancel() {
+		return false;
+	},
+	ignore() {
+		return false;
+	}
+};
+
 class Combiner {
 	constructor(input, options) {
-		this.options = options;
+		this.options = Object.assign({}, DEFAULTS, options);
 
 		if (this.options.DEBUG) {
 			chalk = require('chalk');

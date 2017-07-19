@@ -1,14 +1,5 @@
 const Combiner = require('./Combiner');
 
-const DEFAULTS = {
-	cancel() {
-		return false;
-	},
-	ignore() {
-		return false;
-	}
-};
-
 /**
  * Given an array, combines adjacent elements. Callbacks that indicate if two
  * elements can be combined and what the combined value is must be given. When
