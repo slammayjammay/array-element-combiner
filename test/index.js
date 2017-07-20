@@ -180,12 +180,12 @@ describe('array-element-combiner', () => {
 
 			it('combines a with value of (combines b) -- [a, b, b]', () => {
 				const input = [
-					{ compare: 'one', value: 10 },
-					{ compare: 'two', value: 1 },
-					{ compare: 'two', value: 1, meta: { newCompare: 'one' } },
+					{ compare: 'a', value: 10 },
+					{ compare: 'b', value: 1 },
+					{ compare: 'b', value: 1, meta: { newCompare: 'a' } },
 				];
 				const expected = [
-					{ compare: 'one', value: 12 }
+					{ compare: 'a', value: 12 }
 				];
 
 				expect(combiner(input, options)).to.eql(expected);

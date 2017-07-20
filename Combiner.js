@@ -40,15 +40,19 @@ class Combiner {
 			});
 
 			// find the first element that shouldn't be ignored
-			let notIgnoredIdx = 0;
-			let notIgnoredEl = this.input[notIgnoredIdx];
+			let notIgnoredIdx, notIgnoredEl;
 
-			while (notIgnoredIdx < this.input.length && this.options.ignore(this.temp[0], notIgnoredEl)) {
-				notIgnoredEl = this.input[++notIgnoredIdx];
-			}
+			if (this.temp.length === 1) {
+				notIgnoredIdx = 0;
+				notIgnoredEl = this.input[notIgnoredIdx];
 
-			if (notIgnoredIdx < this.input.length) {
-				this.temp.push(notIgnoredEl);
+				while (notIgnoredIdx < this.input.length && this.options.ignore(this.temp[0], notIgnoredEl)) {
+					notIgnoredEl = this.input[++notIgnoredIdx];
+				}
+
+				if (notIgnoredIdx < this.input.length) {
+					this.temp.push(notIgnoredEl);
+				}
 			}
 
 			debug(() => tempSnapshot = this.temp.slice());
@@ -77,7 +81,9 @@ class Combiner {
 
 			if (this.options.compare(this.temp[0], this.temp[1])) {
 				// remove the combined element from the input array
-				this.input.splice(notIgnoredIdx, 1);
+				if (notIgnoredIdx !== undefined) {
+					this.input.splice(notIgnoredIdx, 1);
+				}
 				const value = this.options.combine(this.temp[0], this.temp[1]);
 
 				debug(() => {
@@ -95,10 +101,18 @@ class Combiner {
 				this.output.push(this.temp.shift());
 
 				// This keeps elements in order.
-				if (notIgnoredIdx === 0) {
-					this.input.splice(notIgnoredIdx, 1);
-				} else {
-					this.temp = this.input.splice(0, 1);
+				// if (notIgnoredIdx === 0) {
+				// 	this.input.splice(notIgnoredIdx, 1);
+				// } else {
+				// 	this.temp = this.input.splice(0, 1);
+				// }
+
+				if (notIgnoredIdx !== undefined) {
+					if (notIgnoredIdx > 0) {
+						this.temp = this.input.splice(0, 1);
+					} else {
+						this.input.splice(notIgnoredIdx, 1);
+					}
 				}
 
 				debug(() => action = 'Skipping:');
